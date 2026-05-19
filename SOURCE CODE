@@ -1,0 +1,597 @@
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { Github, ExternalLink, Mail, MapPin, ArrowDown, Menu, X, Send, ChevronRight } from "lucide-react";
+import { SiReact, SiTypescript, SiPython, SiTailwindcss, SiPostgresql, SiDocker, SiGit, SiFigma, SiGraphql, SiJavascript, SiMongodb, SiRedis } from "react-icons/si";
+
+const NAV_LINKS = [
+  { label: "Home", href: "#home" },
+  { label: "About", href: "#about" },
+  { label: "Skills", href: "#skills" },
+  { label: "Projects", href: "#projects" },
+  { label: "Contact", href: "#contact" },
+];
+
+const SKILLS = [
+  { name: "React", icon: SiReact, color: "#61DAFB" },
+  { name: "TypeScript", icon: SiTypescript, color: "#3178C6" },
+  { name: "JavaScript", icon: SiJavascript, color: "#F7DF1E" },
+  { name: "Python", icon: SiPython, color: "#3776AB" },
+  { name: "MongoDB", icon: SiMongodb, color: "#47A248" },
+  { name: "Tailwind CSS", icon: SiTailwindcss, color: "#06B6D4" },
+  { name: "PostgreSQL", icon: SiPostgresql, color: "#336791" },
+  { name: "GraphQL", icon: SiGraphql, color: "#E10098" },
+  { name: "Docker", icon: SiDocker, color: "#2496ED" },
+  { name: "Redis", icon: SiRedis, color: "#DC382D" },
+  { name: "Git", icon: SiGit, color: "#F05032" },
+  { name: "Figma", icon: SiFigma, color: "#F24E1E" },
+];
+
+const PROJECTS = [
+  {
+    title: "Orbit Dashboard",
+    description: "A real-time analytics platform for SaaS companies. Tracks user engagement, revenue metrics, and conversion funnels with beautiful interactive charts.",
+    tags: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+    github: "#",
+    live: "#",
+    color: "from-violet-600 to-indigo-600",
+  },
+  {
+    title: "Pulse API",
+    description: "A high-performance REST API serving 50k+ daily requests. Features JWT auth, rate limiting, caching, and comprehensive OpenAPI documentation.",
+    tags: ["Node.js", "Express", "Redis", "Docker"],
+    github: "#",
+    live: "#",
+    color: "from-emerald-500 to-teal-600",
+  },
+  {
+    title: "Nomad Map",
+    description: "A travel companion app for remote workers. Discover co-working spots, cafes with fast WiFi, and connect with fellow nomads across 120+ cities.",
+    tags: ["Next.js", "GraphQL", "PostgreSQL", "AWS"],
+    github: "#",
+    live: "#",
+    color: "from-orange-500 to-rose-500",
+  },
+  {
+    title: "Clarity AI",
+    description: "An AI-powered writing assistant that helps teams produce clear, consistent documentation. Integrates with Notion, Confluence, and GitHub wikis.",
+    tags: ["Python", "FastAPI", "React", "OpenAI"],
+    github: "#",
+    live: "#",
+    color: "from-sky-500 to-blue-600",
+  },
+];
+
+function useScrollSpy() {
+  const [active, setActive] = useState("home");
+  useEffect(() => {
+    const sections = NAV_LINKS.map(l => document.getElementById(l.href.slice(1)));
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    );
+    sections.forEach(s => s && observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+  return active;
+}
+
+function FadeIn({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: 32 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export default function Portfolio() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [formState, setFormState] = useState({ name: "", email: "", message: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const active = useScrollSpy();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 4000);
+    setFormState({ name: "", email: "", message: "" });
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* NAV */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? "bg-background/90 backdrop-blur-md border-b border-border shadow-sm" : "bg-transparent"
+        }`}
+      >
+        <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <a href="#home" className="font-serif text-xl font-bold tracking-tight text-foreground">
+            KELVIN <span className="text-primary">.</span>
+          </a>
+
+          {/* Desktop nav */}
+          <ul className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map(link => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  data-testid={`nav-link-${link.label.toLowerCase()}`}
+                  className={`text-sm font-medium transition-colors duration-200 relative group ${
+                    active === link.href.slice(1) ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {link.label}
+                  <span
+                    className={`absolute -bottom-0.5 left-0 h-px bg-primary transition-all duration-300 ${
+                      active === link.href.slice(1) ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="#contact"
+            data-testid="nav-cta"
+            className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            Hire Me <ChevronRight className="w-3.5 h-3.5" />
+          </a>
+
+          {/* Mobile hamburger */}
+          <button
+            data-testid="menu-toggle"
+            onClick={() => setMenuOpen(o => !o)}
+            className="md:hidden p-2 rounded-md text-foreground"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </nav>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-background/95 backdrop-blur-md border-b border-border overflow-hidden"
+            >
+              <ul className="px-6 py-4 flex flex-col gap-4">
+                {NAV_LINKS.map(link => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* HERO */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+        {/* Decorative orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px]" />
+          <div className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full bg-violet-400/10 blur-[100px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[140px]" />
+        </div>
+
+        {/* Grid texture */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+
+        <div className="relative max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card text-muted-foreground text-sm mb-8"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Available for new opportunities
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight mb-6"
+          >
+            Crafting digital
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-violet-500 to-indigo-500">
+              experiences
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            Hi, I'm <strong className="text-foreground font-semibold">Kelvin Nana Agyemang Abbew </strong> — an aspiring Software Engineer, Web Designer, and Digital Marketer who builds clean, modern, user-focused digital experiences and real-world solutions.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <a
+              href="#projects"
+              data-testid="hero-projects-btn"
+              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
+            >
+              View my work
+            </a>
+            <a
+              href="#contact"
+              data-testid="hero-contact-btn"
+              className="px-6 py-3 rounded-full border border-border text-foreground font-medium hover:bg-muted transition-all duration-200 hover:-translate-y-0.5 flex items-center gap-2"
+            >
+              <Mail className="w-4 h-4" /> Get in touch
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          >
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            >
+              <ArrowDown className="w-5 h-5 text-muted-foreground" />
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" className="py-28 px-6">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="flex flex-col lg:flex-row gap-16 items-center">
+            {/* Image placeholder */}
+            <div className="lg:w-2/5 flex-shrink-0">
+              <div className="relative">
+                <div className="w-72 h-72 lg:w-96 lg:h-96 mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 via-violet-500/20 to-indigo-500/20 border border-border flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-indigo-500 mx-auto mb-4 flex items-center justify-center">
+                      <span className="font-serif text-4xl font-bold text-white">KA</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm">Kelvin Abbew</p>
+                  </div>
+                </div>
+                {/* Decorative card */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  viewport={{ once: true }}
+                  className="absolute -bottom-4 -right-4 bg-card border border-border rounded-xl p-4 shadow-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">Accra , Ghana </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Open to remote worldwide</p>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="lg:w-3/5">
+              <p className="text-sm font-medium text-primary uppercase tracking-widest mb-3">About Me</p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                I am an aspiring Software Engineer focused on building modern, responsive, and user-friendly web applications. I enjoy learning new technologies, improving my development skills, and creating digital solutions that solve real problems.
+              </h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  I am an aspiring Software Engineer, Web Designer, and Digital Marketer passionate about building modern and user-friendly digital experiences.
+                </p>
+                <p>
+                  I enjoy learning new technologies, improving my development skills, and creating real-world projects that solve problems and help people.
+                </p>
+                <p>
+                  "When I'm not at my keyboard, I'm hiking, reading, or perfecting my espresso technique..."
+                </p>
+              </div>
+              <div className="mt-8 flex flex-wrap gap-4">
+                {[
+                  { value: "2+", label: "Years experience" },
+                  { value: "10+", label: "Projects shipped" },
+                  { value: "7", label: "Happy clients" },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-card border border-border rounded-xl px-5 py-4">
+                    <div className="font-serif text-2xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* SKILLS */}
+      <section id="skills" className="py-28 px-6 bg-card/40">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <p className="text-sm font-medium text-primary uppercase tracking-widest mb-3">Skills</p>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold">Tools I work with</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+              Across the full stack — from pixel-perfect UIs to resilient backend systems.
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {SKILLS.map((skill, i) => (
+              <FadeIn key={skill.name} delay={i * 0.05}>
+                <motion.div
+                  whileHover={{ y: -4, scale: 1.03 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  data-testid={`skill-card-${skill.name.toLowerCase().replace(/\./g, "").replace(/\s/g, "-")}`}
+                  className="group bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-3 cursor-default hover:border-primary/40 hover:shadow-md transition-all duration-300"
+                >
+                  <skill.icon
+                    className="w-8 h-8 transition-transform duration-300 group-hover:scale-110"
+                    style={{ color: skill.color }}
+                  />
+                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    {skill.name}
+                  </span>
+                </motion.div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROJECTS */}
+      <section id="projects" className="py-28 px-6">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="text-center mb-16">
+            <p className="text-sm font-medium text-primary uppercase tracking-widest mb-3">Projects</p>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold">Things I've built</h2>
+            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+              A selection of work I'm proud of — each one taught me something new.
+            </p>
+          </FadeIn>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {PROJECTS.map((project, i) => (
+              <FadeIn key={project.title} delay={i * 0.1}>
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  data-testid={`project-card-${i}`}
+                  className="group relative bg-card border border-border rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-500"
+                >
+                  {/* Gradient header */}
+                  <div className={`h-2 w-full bg-gradient-to-r ${project.color}`} />
+
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-serif text-xl font-bold group-hover:text-primary transition-colors duration-200">
+                        {project.title}
+                      </h3>
+                      <div className="flex gap-2 ml-2 flex-shrink-0">
+                        <a
+                          href={project.github}
+                          data-testid={`project-github-${i}`}
+                          className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                          aria-label="GitHub"
+                        >
+                          <Github className="w-4 h-4" />
+                        </a>
+                        <a
+                          href={project.live}
+                          data-testid={`project-live-${i}`}
+                          className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                          aria-label="Live site"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">{project.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" className="py-28 px-6 bg-card/40">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            <FadeIn>
+              <p className="text-sm font-medium text-primary uppercase tracking-widest mb-3">Contact</p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-5 leading-tight">
+                Let's build something<br />worth building.
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-8">
+                Whether you have a project in mind, or trying to build something amazing send a message and I'll get back to you as soon as possible.
+              </p>
+              <div className="space-y-4">
+                <a
+                  href="mailto:alex@example.com"
+                  data-testid="contact-email-link"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center group-hover:border-primary/40 transition-colors">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  kelvinabbew@gmail.com
+                </a>
+                <a
+                  href="https://github.com"
+                  data-testid="contact-github-link"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center group-hover:border-primary/40 transition-colors">
+                    <Github className="w-4 h-4" />
+                  </div>
+                  github.com/kelvinabbew
+                </a>
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={0.15}>
+              <div className="bg-card border border-border rounded-2xl p-8">
+                <AnimatePresence mode="wait">
+                  {submitted ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="text-center py-12"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
+                        <Send className="w-7 h-7 text-emerald-500" />
+                      </div>
+                      <h3 className="font-serif text-xl font-bold mb-2">Message sent!</h3>
+                      <p className="text-muted-foreground text-sm">I'll get back to you within 24 hours.</p>
+                    </motion.div>
+                  ) : (
+                    <motion.form
+                      key="form"
+                      onSubmit={handleSubmit}
+                      initial={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="space-y-5"
+                    >
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium mb-2">
+                          Your name
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          required
+                          data-testid="input-name"
+                          value={formState.name}
+                          onChange={e => setFormState(s => ({ ...s, name: e.target.value }))}
+                          placeholder="Kelvin Abbew"
+                          className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium mb-2">
+                          Email address
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          required
+                          data-testid="input-email"
+                          value={formState.email}
+                          onChange={e => setFormState(s => ({ ...s, email: e.target.value }))}
+                          placeholder="kelvinabbew@gmail.com"
+                          className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="message" className="block text-sm font-medium mb-2">
+                          Message
+                        </label>
+                        <textarea
+                          id="message"
+                          required
+                          rows={5}
+                          data-testid="input-message"
+                          value={formState.message}
+                          onChange={e => setFormState(s => ({ ...s, message: e.target.value }))}
+                          placeholder="Tell me about your project..."
+                          className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        data-testid="button-submit"
+                        className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                      >
+                        Send message <Send className="w-4 h-4" />
+                      </button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-border py-8 px-6">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <a href="#home" className="font-serif text-lg font-bold">
+            KELVIN<span className="text-primary">.</span>
+          </a>
+          <p className="text-sm text-muted-foreground">
+            Designed & built with care. {new Date().getFullYear()}.
+          </p>
+          <div className="flex items-center gap-4">
+            <a href="https://github.com" data-testid="footer-github" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Github className="w-5 h-5" />
+            </a>
+            <a href="mailto:kelvin@example.com" data-testid="footer-email" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Mail className="w-5 h-5" />
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
